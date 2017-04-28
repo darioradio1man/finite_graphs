@@ -1,71 +1,78 @@
 #include "Graph.h"
 
-Graph::Graph()
+Graph::Graph(int N)
 {
-    //ctor
-}
-
-Graph::~Graph()
-{
-    //dtor
+    adjMatrix = vector<vector<int>>();
+    weighted = true;
+    oriented = false;
+    for(int i = 0; i < N; i++)
+        adjMatrix.push_back(vector<int>(N));
+    nodeCount = N;
 }
 
 void Graph::readGraph(string fileName)
 {
-	oriented = false;
-	weighted = false;
-	ifstream infile(fileName);
-	string line;
-	string weightString, orientedString;
-	int lineNumber = 0;
+    oriented = false;
+    weighted = false;
+    ifstream infile(fileName);
+    string line;
+    string weightedString, orientedString;
+    int lineNumber = 0;
 
-	while (getline(infile, line))
-	{
-		istringstream iss(line);
-		if (lineNumber == 0)
-		{
-			iss >> type;
-			iss >> nodeCount;
-		}
-		switch (type)
-		{
-			case 'C':
-				if (lineNumber == 0)
-				{
-					iss >> weightString;
-					if (weightString == "1") weighted = true;
-					else weighted = false;
-					adjMatrix = vector<vector<int>>(0);
-				}
-				else
-				{
-					vector<int> temp = vector<int>(0);
-					for (unsigned i = 0; i < nodeCount; i++)
-					{
-						string str = "";
-						iss >> str;
-						int node = stoi(str);
-						if (!weighted && node > 1) node = 1;
-						temp.push_back(node);
-					}
-					adjMatrix.push_back(temp);
-				}
-				break;
-			case 'L':
-				if (lineNumber == 1)
-				{
-					iss >> orientedString;
-					iss >> weightString;
-					if (weightString == "1") weighted = true;
-					else weighted = false;
-					if (orientedString == "1") oriented = true;
-					else oriented = false;
-					if (!weighted) edgeList = vector<pair<int,int>>(0);
-					else weightedEdgeList = vector<tuple<int,int,int>>(0);
-				}
-				else if (lineNumber > 1 && lineNumber < ((int)nodeCount + 2))
-				{
-					if (weighted)
+    while(getline(infile, line))
+    {
+        istringstream iss(line);
+        if(lineNumber == 0);
+        {
+            iss >> type;
+            iss >> nodeCount;
+        }
+        switch(type)
+        {
+        case 'C':
+            if(lineNumber == 0)
+            {
+                iss >> weightedString;
+                if (weightedString == "1")
+                    weighted = true;
+                else weighted = false;
+                adjMatrix = vector<vector<int>>(0);
+            }
+            else
+            {
+                vector<int> temp = vector<int>(0);
+                for(unsigned i = 0; i < nodeCount; i++)
+                {
+                    string str = "";
+                    iss >> str;
+                    int node = stoi(str);
+                    if(!weighted && node > 1) node = 1;
+                    temp.push_back(node);
+                }
+                adjMatrix.push_back(temp);
+            }
+            break;
+        case 'L':
+            if(lineNumber == 1)
+            {
+                iss >> orientedString;
+                iss >> weightedString;
+                if(weightedString == "1")
+                    weighted = true;
+                else weighted = false;
+
+                if(orientedString == "1")
+                    oriented = true;
+                else oriented = false;
+
+                if(!weighted)
+                    edgeList = vector<pair<int, int>>(0);
+                else
+                    weightedEdgeList = vector<tuple<int, int, int>>(0);
+            }
+            else if(lineNumber > 1 && lineNumber < ((int)nodeCount + 2))
+            {
+                if (weighted)
 					{
 						vector<tuple<int,int,int>> tempVector = vector<tuple<int,int,int>>();
 						string str = "";
@@ -97,14 +104,14 @@ void Graph::readGraph(string fileName)
 						}
 						adjList.push_back(tempVector);
 					}
-				}
-				break;
-			case 'E':
-				if (lineNumber == 1)
+            }
+            break;
+        case 'E':
+            if (lineNumber == 1)
 				{
 					iss >> orientedString;
-					iss >> weightString;
-					if (weightString == "1") weighted = true;
+					iss >> weightedString;
+					if (weightedString == "1") weighted = true;
 					else weighted = false;
 					if (orientedString == "1") oriented = true;
 					else oriented = false;
@@ -140,10 +147,10 @@ void Graph::readGraph(string fileName)
 						edgeList.push_back(tempPair);
 					}
 				}
-				break;
-		}
-		lineNumber++;
-	}
+            break;
+        }
+        lineNumber++;
+    }
 }
 
 void Graph::addEdge(int from, int to, int weight)
@@ -618,4 +625,118 @@ void Graph::writeGraph(string fileName)
 			break;
 	}
 	file.close();
+}
+
+Graph Graph::getSpaingTreePrima()
+{
+    if(type != 'C')
+        transformToAdjMatrix();
+    int a, b, u, v, n = nodeCount, i, j, ne = 1;
+    int visited[10] = {0}, theMin, mincost = 0, cost[10][10];
+    int path[100] = {0};
+    int path_index = 0;
+
+    for(i = 1; i <= n; i++)
+    {
+        for(j = 1; j <= n; j++)
+        {
+            cost[i][j] = adjMatrix.at(i - 1).at(j - 1);
+            if(cost[i][j] == 0)
+                cost[i][j] = INT_MAX;
+        }
+    }
+    visited[1] = 1;
+
+    while(ne < n)
+    {
+        for(i = 1; theMin = INT_MAX, i <= n; i++)
+        {
+            for(j = 1; j <= n; j++)
+            {
+                if(cost[i][j] < theMin)
+                {
+                    if(visited[i] != 0)
+                    {
+                        theMin = cost[i][j];
+                        a = u = i;
+                        b = v = j;
+                    }
+                }
+            }
+        }
+        if(visited[u] == 0 || visited[v] == 0)
+        {
+            path[path_index] = b;
+            path_index++;
+            ne++;
+            mincost += theMin;
+            visited[b] = 1;
+        }
+        cost[a][b] = cost[b][a] = INT_MAX;
+    }
+
+    Graph graph = Graph(n);
+    int c = 1; j = 0;
+    for(int i = 0; i < n - 1; i++)
+    {
+        j = i;
+        while(adjMatrix.at(c - 1).at(path[i] - 1) == 0)
+            c = path[j--];
+        graph.addEdge(c, path[i], adjMatrix.at(c - 1).at(path[i] - 1));
+        c = path[i];
+    }
+    return graph;
+}
+
+Graph Graph::getSpaingTreeKruskal()
+{
+    transformToListOfEdges();
+    int n = 0, m = weightedEdgeList.size();
+    Graph newGraph = Graph(0);
+    newGraph.type = 'E';
+    newGraph.weightedEdgeList = vector<tuple<int, int, int>>();
+    newGraph.weighted = true;
+    newGraph.oriented = false;
+
+    DSU dsu = DSU(n);
+    for(int i = 0; i < n; i++)
+        dsu.p[i] = i;
+    for(int i = 0; i < m; i++)
+    {
+        int x = get<0>(weightedEdgeList[i]), y = get<1>(weightedEdgeList[i]);
+        if (dsu.unite(x, y))
+			newGraph.weightedEdgeList.push_back(weightedEdgeList[i]);
+    }
+    return newGraph;
+}
+
+Graph Graph::getSpaingTreeBoruvka()
+{
+    if(type != 'E')
+        transformToListOfEdges();
+    int n = nodeCount, m = weightedEdgeList.size();
+    Graph newGraph = Graph(0);
+    newGraph.type = 'E';
+    newGraph.weightedEdgeList = vector<tuple<int,int,int>>();
+    newGraph.weighted = true;
+    newGraph.oriented = false;
+
+    DSU dsu = DSU(n);
+    for(int i = 0; i < n; i++)
+        dsu.p[i] = i;
+    int e = 0, t = 0;
+    while(e < m - 1)
+    {
+        int v1 = get<0>(weightedEdgeList[e]);
+        int v2 = get<1>(weightedEdgeList[e]);
+
+        if(dsu.findIt(v1) != dsu.findIt(v2))
+        {
+            newGraph.weightedEdgeList.push_back(weightedEdgeList[e]);
+            dsu.unite(v1, v2);
+            t += 1;
+        }
+        e++;
+    }
+    return newGraph;
 }
