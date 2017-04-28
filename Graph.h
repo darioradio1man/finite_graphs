@@ -9,13 +9,16 @@
 #include <sstream>
 #include <utility>
 #include <tuple>
+#include <climits>
+#include <algorithm>
+#include "DSU.h"
+
 using namespace std;
 
 class Graph
 {
     public:
-        Graph();
-        ~Graph();
+        Graph(int);
         void readGraph(string);
         void addEdge(int, int, int);
         void removeEdge(int, int);
@@ -24,6 +27,10 @@ class Graph
         void transformToAdjMatrix();
         void transformToListOfEdges();
         void writeGraph(string);
+        
+        Graph getSpaingTreePrima();
+        Graph getSpaingTreeKruskal();
+        Graph getSpaingTreeBoruvka();
 
     private:
         char type; // текущий тип отображения
