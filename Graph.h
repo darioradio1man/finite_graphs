@@ -31,6 +31,17 @@ class Graph
         Graph getSpaingTreePrima();
         Graph getSpaingTreeKruskal();
         Graph getSpaingTreeBoruvka();
+        
+        //labs 3,4
+        int checkEuler(bool &circleExist);
+	    vector<int> getEuleranTourFleri();
+	    vector<int> getEuleranTourEffective();
+	    bool empty();
+    	bool fleury(vector<int>);
+
+	    int checkBipart(vector<char> &marks); // Проверка графа на двудольность.
+    	vector<pair<int,int> > getMaximumMatchingBipart(); // Алгоритм Куна.
+    	bool kuhn(int v); // Вспомогательная функция для алгоритма Куна.
 
     private:
         char type; // текущий тип отображения
