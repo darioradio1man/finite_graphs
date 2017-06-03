@@ -740,3 +740,275 @@ Graph Graph::getSpaingTreeBoruvka()
     }
     return newGraph;
 }
+
+// 3 Lab
+vector<int> Graph::getEuleranTourEffective()
+{
+    int n = nodeCount, i, j;
+	stack<int> S ;
+	vector<int> circuit = vector<int>();
+	vector<int> returnVector = vector<int>();
+	bool hasEuleranCircuit = false;
+	int startNode = 0;
+	transformToAdjMatrix();
+
+	Graph newGraph = Graph(nodeCount);
+	for (i = 0; i < nodeCount; i++)
+		for (j = 0; j < nodeCount; j++)
+			newGraph.adjMatrix[i][j] = adjMatrix[i][j];
+
+	startNode = checkEuler(hasEuleranCircuit);
+	if(startNode != -1)
+	{
+		S.push(startNode);
+		while(!S.empty())
+		{
+			int w = S.top();
+			bool hasEdges = false;
+			for (i = 0; i < n; i++)
+			{
+				if (newGraph.adjMatrix[w][i] != 0)
+				{
+					S.push(i);
+					newGraph.removeEdge(w+1, i+1);
+					hasEdges = true;
+					break;
+				}
+			}
+			if (!hasEdges)
+			{
+				S.pop();
+				circuit.push_back(w);
+			}
+		}
+	}
+	for (i = circuit.size()-1; i > -1; i--)
+	{
+		returnVector.push_back(circuit[i]);
+	}
+	return returnVector;
+}
+
+vector<int> Graph::getEuleranTourFleri()
+{
+	int n = nodeCount, i, j;
+	vector<int> returnVector;
+	bool hasEuleranCircuit = false;
+	int startNode = 0;
+	transformToAdjMatrix();
+
+	Graph newGraph = Graph(nodeCount);
+	for (i = 0; i < nodeCount; i++)
+		for (j = 0; j < nodeCount; j++)
+			newGraph.adjMatrix[i][j] = adjMatrix[i][j];
+	startNode = checkEuler(hasEuleranCircuit);
+	if(startNode != -1)
+	{
+		vector<int> circuit;
+		int current = startNode;
+		circuit.push_back(current);
+		while(!newGraph.empty())
+		{
+			for(i = 0; i < n; i++)
+			{
+				int previous = current;
+				if(newGraph.adjMatrix[current][i] > 0)
+				{
+					vector<int> del;
+					del.push_back(current);
+					del.push_back(i);
+					if(newGraph.fleury(del))
+					{
+						newGraph.removeEdge(del[0]+1, del[1]+1);
+						current = i;
+						circuit.push_back(current);
+						break;
+					}
+				}
+			}
+		}
+		returnVector = circuit;
+	}
+	else
+		cout << "No Euleran circuit." << endl;
+	return returnVector;
+}
+
+int Graph::checkEuler(bool &circleExist)
+{
+	int oddCount = 0, startNode = -1;
+	for(int i = 0; i < adjMatrix.size(); i++)
+	{
+		int deg = 0;
+		for(int j = 0; j < adjMatrix[0].size(); j++)
+		{
+			if (adjMatrix[i][j] > 0)
+			{
+				deg++;
+			}
+		}
+		if(deg % 2 != 0)
+		{
+			oddCount++;
+			circleExist = false;
+		}
+		else
+		{
+			if (startNode == -1)
+				startNode = i;
+		}
+
+	}
+
+	circleExist = true;
+	if (oddCount > 2)
+		return -1;
+	return startNode;
+}
+
+bool Graph::empty()
+{
+	for(int i = 0; i < adjMatrix.size(); i++)
+		for(int j = 0; j < adjMatrix[0].size(); j++)
+			if(adjMatrix[i][j] != 0)
+				return false;
+	return true;
+}
+
+bool Graph::fleury(vector<int> del )
+{
+	int n, i, j, k;
+	if(del[0] == del[1])
+		return false;
+	vector<vector<int> > edged = adjMatrix;
+	edged[del[0]][del[1]] = 0;
+	edged[del[1]][del[0]] = 0;
+	n = edged[0].size();
+
+	//Initialize Table
+	const int infinity = INT_MAX;
+	vector<bool> known;
+	for(i = 0; i < n; i++)
+	{
+		known.push_back(false);
+	}
+	vector<int> d;
+	d.push_back(0);
+	for(i = 1; i < n; i++)
+	{
+		d.push_back(infinity);
+	}
+	vector<int> p;
+	for(i = 0; i < n; i++)
+	{
+		p.push_back(-1);
+	}
+	for(k = 0; k < n; k++)
+	{
+		int min = 0;
+		while(known[min] == true)
+			min++;
+		for(i = 0; i < n; i++)
+			if(known[i] == false && d[i] < d[min])
+				min=i;
+		known[min] = true;
+		for(j = 0; j < n; j++)
+		{
+			if(edged[min][j] != 0 && d[j] > edged[min][j] && known[j] == false)
+			{
+				d[j] = edged[min][j];
+				p[j] = min;
+			}
+		}
+	}
+	bool ok = true;
+
+	for(i = 1; i < n; i++)
+	{
+		if(p[i] == -1)
+			for (int j=0; j < n; j++)
+				if(edged[i][j] != 0)
+				{
+					ok=false;
+					break;
+				}
+	}
+	return ok;
+}
+
+//lab 4
+
+int Graph::checkBipart(vector<char> &marks)
+{
+	transformToAdjMatrix();
+    for (int i = 0; i < nodeCount; i++)
+		marks.push_back('0');
+    marks[0] = '1';
+
+	int count = 0;
+    queue<int> q;
+    q.push(0);
+
+    while (!q.empty())
+    {
+        int u = q.front();
+        q.pop();
+
+        for (int v = 0; v < nodeCount; v++)
+        {
+            if (adjMatrix[u][v] != 0 && marks[v] == '0')
+            {
+				if (marks[u] == '1')
+				{
+					marks[v] = '2';
+				}
+				else
+				{
+					marks[v] = '1';
+					count++;
+				}
+                q.push(v);
+            }
+            else if (adjMatrix[u][v] != 0 && marks[v] == marks[u])
+                return -1;
+        }
+    }
+    return count;
+}
+
+vector<pair<int,int> > Graph::getMaximumMatchingBipart()
+{
+	vector<char> marks;
+	transformToAdjMatrix();
+	vector<pair<int,int>> edges;
+	int n = nodeCount;
+	if (checkBipart(marks) != -1)
+	{
+		mt.assign(n, -1);
+		for (int i = 0; i < n; ++i)
+		{
+			visited.assign (n, false);
+			kuhn(i);
+		}
+
+		for (int i = 0; i < n; ++i)
+			if (mt[i] != -1)
+				edges.push_back(pair<int,int>(mt[i]+1, i+1));
+	}
+	return edges;
+}
+
+bool Graph::kuhn(int v)
+{
+	if (visited[v])  return false;
+	visited[v] = true;
+	for (int i = 0; i < adjMatrix[v].size(); ++i)
+	{
+		if (adjMatrix[v][i] != 0 && ((mt[i] == -1) || kuhn(mt[i])))
+		{
+			mt[i] = v;
+			return true;
+		}
+	}
+	return false;
+}
