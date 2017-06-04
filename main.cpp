@@ -11,13 +11,15 @@ int main()
 	//graph.transformToAdjMatrix();
 	//graph.writeGraph("output.txt");
 	
+	
+	//Здесь по cin.get(); это для лабораторной работы №3
 	//Graph graph = Graph(0);
 	//graph.readGraph("input.txt");
 
 	//vector<int> circuit1 = graph.getEuleranTourFleri();
 	//vector<int> circuit2 = graph.getEuleranTourEffective();
 
-	//lab3
+	
 	//cout << "Eulerian tour using Fleury's algorithm:" << endl;
 	//for (int i = 0; i <  circuit1.size(); i++)
 	//	cout << circuit1[i] + 1 << " ";
